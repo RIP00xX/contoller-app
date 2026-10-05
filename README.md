@@ -1,117 +1,115 @@
-# Virtual Controller
+# Virtual Game Controller
 
-Bluetooth HID controller with separate inner and outer layouts.
+[![Android build](https://github.com/RIP00xX/contoller-app/actions/workflows/build-apk.yml/badge.svg)](https://github.com/RIP00xX/contoller-app/actions/workflows/build-apk.yml)
 
-## Dual-screen debugging
+A Kotlin and Jetpack Compose Android app that turns a phone into a Bluetooth HID gamepad. On supported foldables, the inner screen provides sticks and face buttons while the cover screen provides L1, L2, R1 and R2.
 
-The inner screen contains sticks and face buttons; the preset outer layouts
-contain L1/R1 and L2/R2. Unfolding alone does not imply dual-screen availability.
-All four outer controls are regular hold/release buttons. L2/R2 send digital
-trigger buttons in host slots 6/7 (zero-based); no pressure slider or trigger
-axis is sent. D-pad taps respond immediately and send direction buttons in
-slots 12..15, with two buttons for diagonals and none for release. There is no
-extra hat axis, avoiding conflicting host/browser fallback interpretations.
-Stick clicks use slots 10/11; the only gamepad axes are the four stick axes in
-the first four Windows Chromium raw axis slots. This matches common browser
-input ordering but does not change the controller into an XInput device or
-guarantee every game's automatic mapping.
-Their size uses the actual cover view's shorter edge, capped at 144 dp, with
-safe drawing insets. Profile positions remain relative to that outer view in
-both portrait and landscape.
-The editor switches between inner and outer canvases; the outer preview uses
-the dimensions measured from the active cover view (Fold 6 portrait dimensions
-are used until the first dual-screen session).
+The dual-screen implementation has been tested on a **Samsung Galaxy Z Fold 6** connected to a **Windows PC**. No companion PC app is required for hosts and games that accept generic Bluetooth HID controllers.
 
-The PlayStation and Xbox presets include a central touchpad on the inner screen.
-Drag its surface to send single-contact absolute HID touchpad coordinates; hold
-the separate **Click** strip to press gamepad button 18. Touch and click reports
-are independent of sticks and shoulder inputs. No companion app is required
-for the gamepad. This is a generic Bluetooth HID controller, not a DualShock or
-DualSense protocol emulator: ordinary games may ignore touchpad coordinates.
-Native touchpad handling depends on the paired host. No mouse report or automatic
-mapping to a joystick is sent.
+## Features
 
-Because the Bluetooth descriptor and button order have changed, a host that
-caches the previous descriptor may need to forget the old pairing and pair again
-after installing this version.
-The app checks Jetpack WindowManager's rear-facing `OPERATION_PRESENT_ON_AREA`
-capability. Tap **Enable outer controls** when the status reports availability,
-then accept the device's system dialog if one appears.
+- Simultaneous inner/cover-screen controls through a system-approved rear-display session.
+- Two analog sticks, stick clicks, face buttons, digital D-pad, shoulder buttons and system buttons.
+- Ordinary hold/release L2/R2 buttons, with no pressure slider.
+- PlayStation, Xbox and racing layout presets.
+- Separate inner/outer layout editor with drag positioning, size, opacity and haptic settings.
+- Saved preset overrides and active-profile selection stored locally with DataStore.
+- Cover buttons can grow up to **144 dp**, within the viewport and the editor's 50% size scale limit. Preview and actual controls use the same sizing rule.
+- Central touch surface and a separate touchpad Click strip in the PlayStation and Xbox presets.
+- Shared input state so controls on both screens work together.
 
-If no dual-screen capability is reported, a running `Presentation` display can
-be used for testing (for example, an emulator's simulated secondary display).
-An arbitrary secondary display ID is not treated as the cover screen. Overlay
-permission and window flags cannot independently activate a firmware-disabled
-cover panel. Samsung app-continuity settings address screen switching, not
-simultaneous inner/outer operation.
+## Download the APK
 
-Official API reference and sample:
-https://developer.android.com/develop/adaptive-apps/guides/foldables/support-foldable-display-modes
+1. Open [GitHub Actions](https://github.com/RIP00xX/contoller-app/actions/workflows/build-apk.yml).
+2. Select the latest successful build for `main`.
+3. Download **VirtualController-Debug-APK** from its artifacts. GitHub may require sign-in.
+4. Extract the archive and install `app-debug.apk` on the phone.
 
-### Verify on a Fold 6
+These are development APKs. GitHub runners can generate different debug signing keys between builds, so Android may reject an in-place update. Reinstalling removes app data; preserve layouts before doing so. For consistent distributed updates, configure a persistent signing key outside this repository.
 
-1. Build with JDK 17 and Android SDK 34:
-   `./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug` (Windows: `gradlew.bat`).
-2. Install `app/build/outputs/apk/debug/app-debug.apk`, open the app unfolded,
-   select the DualSense or Xbox preset, and record the status shown at the bottom.
-3. If enabled, tap **Enable outer controls**. Verify L1/L2/R1/R2 are on the cover
-   screen. Hold a stick on the inner screen while pressing both outer triggers;
-   the paired host should receive all inputs together. Release L1 while holding
-   a face button and verify that only L1 is released.
-4. Fold/unfold, change profiles, enter/exit the editor, and background/return to
-   the app. Re-enable outer controls after returning. Confirm there are no stuck
-   controls or duplicate presentation windows.
-5. Verify the outer controls fit in portrait and landscape, and outer L2/R2
-   activate immediately on press without requiring a drag. Check the central
-   Click strip as button 18 in the host's game-controller test panel, including
-   while holding a stick and an outer trigger. Check touch movement separately
-   on a host that natively supports HID touchpad input; gamepad recognition does
-   not establish touchpad support.
-6. Move or resize an element in either editor canvas and save. Change profiles,
-   switch back, and restart the app; the edited preset must retain its changes.
+## Use the controller
 
-With USB debugging enabled, capture read-only device diagnostics:
+1. Turn on Bluetooth, open the app and grant its Bluetooth/Nearby devices permissions.
+2. Pair the phone with the host through Bluetooth settings while the app is running.
+3. Choose a controller layout using the profile selector.
+4. Unfold a supported foldable and tap **Enable outer controls** when the status reports availability. Accept the system display-session dialog if shown.
+5. Verify inputs using the host's controller settings or a [browser gamepad tester](https://webcammictest.com/gamepad/), then configure the game's bindings if needed.
 
-```powershell
-adb devices -l
-adb shell getprop ro.build.version.release
-adb shell getprop ro.build.version.oneui
-adb shell dumpsys display > fold6-display.txt
-adb shell dumpsys device_state > fold6-device-state.txt
-adb logcat -d -s DualScreenManager AndroidRuntime > fold6-controller-log.txt
+The app does not request display-overlay permission. Backgrounding it ends the cover session and releases inputs. Re-enable outer controls after returning if needed.
+
+### Customize and save
+
+Open the layout editor and select the **inner** or **outer** canvas. Select a control, drag it into position, and adjust **Size Scale**, opacity or haptic intensity. Save when finished.
+
+To enlarge cover buttons, increase each outer button's **Size Scale**. Size uses the cover view's shorter edge rather than the inner display's width. Positions are clamped to the canvas. Saved edits replace their original preset on loading, so switching profiles and reopening the app retain the edit.
+
+### Compatibility
+
+- Requires Android 10 or later and working Bluetooth HID Device support.
+- Dual-screen mode requires a supported rear-display presentation capability. Device and firmware support vary; unfolding alone does not activate both displays.
+- This is a **generic HID gamepad**, not an XInput device or a Sony protocol emulator. Automatic bindings and game/console support vary. Console compatibility has not been established.
+- L2/R2 and D-pad directions are digital buttons. Trigger pressure and a separate POV/hat axis are not advertised.
+- Touchpad movement uses a separate absolute HID digitizer report. Ordinary games/testers may ignore those coordinates. The Click strip independently sends gamepad button 18 (zero-based index 17).
+- Rumble output is not implemented.
+
+## Build from source
+
+Requirements: **JDK 17**, **Android SDK Platform 34**, and Android Studio or a terminal with the SDK configured using `ANDROID_HOME` or an untracked `local.properties` file.
+
+```sh
+git clone https://github.com/RIP00xX/contoller-app.git
+cd contoller-app
 ```
 
-Capture the dumps while unfolded with this app open. Also capture them while
-Asphalt is actually displaying its controls on both panels, if available on the
-same phone. This helps determine whether the game uses an OEM-specific display
-path. The log includes device/firmware, visible display IDs, display states and
-flags, rear-area capability, and any session failure.
+Open the root folder in Android Studio, sync Gradle and run the `app` configuration on a connected device. The repository includes the Gradle wrapper, version catalog, Android module, resources and tests.
 
-The patch fixes missing posture collection, Compose lifecycle ownership,
-shared input reports, and display selection. Panel activation from the patched
-app remains unverified until its APK is built and tested on the phone.
+Windows PowerShell:
 
-### Findings from the connected Fold 6
+```powershell
+.\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+```
 
-On 2026-10-05, the connected SM-F956U1 reported Android 16, One UI property
-`80000`, and firmware `F956U1UES3CZC1`.
+macOS/Linux:
 
-- In normal unfolded state 3 (`OPENED`), the inner panel is ON. Logical display
-  1 is the cover panel (968 x 2376), marked `FLAG_PRESENTATION` but disabled and
-  OFF. The installed original app logged `Total displays: 1, Presentation
-  displays: 0`, followed by `No secondary display available for dual-screen mode`.
-- The firmware exposes state 4 (`CONCURRENT_INNER_DEFAULT`) and maps
-  `config_deviceStateConcurrentRearDisplay` to 4.
-- A temporary ADB request for state 4 made both logical displays enabled and ON;
-  the cover display also acquired `FLAG_REAR_DISPLAY`. The request was reset
-  immediately, and the phone returned to state 3. This demonstrates panel
-  activation through the system mode; it does not verify the patched app's
-  session, touch input, or HID output.
-- The OEM WindowManager extension contains `WindowAreaComponentImpl` and rear
-  display presentation session classes/methods. Actual capability and consent
-  behavior must still be checked from the patched APK.
+```sh
+chmod +x gradlew
+./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+```
 
-The original implementation did not request a dual-screen device session, so
-its display enumeration could not find the disabled cover panel. The supported
-WindowAreaController session is the intended replacement; no permanent ADB
-override is part of the app.
+Output: `app/build/outputs/apk/debug/app-debug.apk`.
+
+### Verification and CI
+
+[The workflow](.github/workflows/build-apk.yml) runs tests, Android lint and APK assembly on pushes and pull requests to `main`/`master`, and supports manual runs. It uploads the APK, Gradle log and verification reports. Lint errors fail the build.
+
+The current suite contains 16 tests covering report serialization, button separation, D-pad diagonals/release, Windows raw stick ordering, descriptor sizes, shared input state, touchpad payloads, saved preset overrides and touch-coordinate calculations. See [Fold 6 testing](docs/FOLD6_TESTING.md) for live checks and diagnostics.
+
+## Project structure
+
+| Path | Purpose |
+| --- | --- |
+| `app/src/main/java/com/virtualcontroller/bt/` | HID registration, descriptors, reports and shared input state |
+| `app/src/main/java/com/virtualcontroller/foldable/` | Fold posture and cover-display sessions |
+| `app/src/main/java/com/virtualcontroller/ui/components/` | Touch buttons, sticks, D-pad, touchpad and steering controls |
+| `app/src/main/java/com/virtualcontroller/ui/controller/` | Inner/outer controller screens |
+| `app/src/main/java/com/virtualcontroller/ui/editor/` | Layout editor and screen previews |
+| `app/src/main/java/com/virtualcontroller/data/` | DataStore profiles and preset override merging |
+| `app/src/main/java/com/virtualcontroller/model/` | Profiles, controls and screen targets |
+| `app/src/test/` | Unit and regression tests |
+| `gradle/` | Wrapper and dependency version catalog |
+| `.github/workflows/` | Verification and APK builds |
+
+See [WALKTHROUGH.md](WALKTHROUGH.md) for implementation details.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Cover does not activate | Open the app unfolded, check its status and enable outer controls. Firmware support is required. |
+| Old input mapping after updating | Forget the host pairing and pair again to clear its cached HID descriptor. |
+| Browser sees the controller but a game ignores it | Check generic HID/DirectInput support and the game's bindings. XInput-only support is insufficient. |
+| Layout edits disappear | Save and return to the same profile. Current builds load saved edits ahead of the preset. |
+| Cover button stops growing | Size is bounded by 144 dp, the cover viewport and the slider's maximum. |
+| Touchpad click works but movement does not | Check native generic HID touchpad support; Sony-specific handling is not emulated. |
+
+Bug reports should include the phone model, Android/One UI version, app commit/build, host OS, game/tester, profile and reproduction steps. Remove pairing addresses and unrelated device logs before sharing.
