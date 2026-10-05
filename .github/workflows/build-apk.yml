@@ -43,7 +43,15 @@ jobs:
           exit 1
         )
 
+    - name: Upload Build Log Artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: gradle-build-log
+        path: build.log
+
     - name: Upload APK Artifact
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: VirtualController-Debug-APK
