@@ -2,7 +2,6 @@ package com.virtualcontroller.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -34,17 +33,6 @@ fun VirtualTriggerSlider(
 
     Box(
         modifier = modifier
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = { offset ->
-                        pressureValue = calculatePressure(offset.y, size.height.toFloat())
-                        onPressureChanged(pressureValue)
-                        tryAwaitRelease()
-                        pressureValue = 0
-                        onPressureChanged(0)
-                    }
-                )
-            }
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offset ->
