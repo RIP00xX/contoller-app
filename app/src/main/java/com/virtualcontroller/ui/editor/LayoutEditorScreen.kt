@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -81,7 +80,7 @@ fun LayoutEditorScreen(
             .background(Color(0xFF0F172A))
     ) {
         // --- Drag & Drop Canvas Overlay ---
-        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(top = 80.dp, end = 280.dp)) {
+        Box(modifier = Modifier.fillMaxSize().padding(top = 80.dp, end = 280.dp)) {
           val previewModifier = if (editingScreen == TargetScreen.OUTER_SCREEN) {
               Modifier.align(Alignment.Center).aspectRatio(outerViewport.width / outerViewport.height)
           } else Modifier.fillMaxSize()
