@@ -30,7 +30,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VirtualController"
-        tools:targetApi="35">
+        tools:targetApi="34">
         
         <activity
             android:name=".MainActivity"
