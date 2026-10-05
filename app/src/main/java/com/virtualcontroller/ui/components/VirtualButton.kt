@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -33,16 +35,18 @@ fun VirtualButton(
     accentColor: Color = Color(0xFF00E5FF),
     opacity: Float = 0.85f,
     hapticIntensity: Float = 0.7f,
+    shape: Shape = CircleShape,
     onPressedStateChanged: (buttonBit: Int, isPressed: Boolean) -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
+    val currentCallback by rememberUpdatedState(onPressedStateChanged)
     val scale by animateFloatAsState(targetValue = if (isPressed) 0.90f else 1.0f, label = "buttonScale")
 
     Box(
         modifier = modifier
             .scale(scale)
             .alpha(opacity)
-            .clip(CircleShape)
+            .clip(shape)
             .background(
                 brush = Brush.radialGradient(
                     colors = if (isPressed) {
@@ -55,19 +59,20 @@ fun VirtualButton(
             .border(
                 width = 2.dp,
                 color = if (isPressed) accentColor else Color.White.copy(alpha = 0.4f),
-                shape = CircleShape
+                shape = shape
             )
-            .pointerInput(Unit) {
+            .pointerInput(buttonBit) {
                 detectTapGestures(
                     onPress = {
                         isPressed = true
-                        onPressedStateChanged(buttonBit, true)
+                        val callback = currentCallback
+                        callback(buttonBit, true)
                         try {
                             tryAwaitRelease()
                         } finally {
                             // A display/session disappearing must also release a held bumper.
                             isPressed = false
-                            onPressedStateChanged(buttonBit, false)
+                            callback(buttonBit, false)
                         }
                     }
                 )

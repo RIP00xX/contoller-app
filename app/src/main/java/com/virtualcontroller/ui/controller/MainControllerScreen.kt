@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.virtualcontroller.bt.GamepadReport
+import com.virtualcontroller.bt.TouchpadReport
 import com.virtualcontroller.bt.HidConnectionState
 import com.virtualcontroller.foldable.DevicePosture
 import com.virtualcontroller.foldable.OuterScreenStatus
@@ -54,6 +56,7 @@ import com.virtualcontroller.ui.components.VirtualDPad
 import com.virtualcontroller.ui.components.VirtualJoystick
 import com.virtualcontroller.ui.components.VirtualSteeringWheel
 import com.virtualcontroller.ui.components.VirtualTriggerSlider
+import com.virtualcontroller.ui.components.VirtualTouchpad
 import kotlin.math.roundToInt
 
 
@@ -69,7 +72,8 @@ fun MainControllerScreen(
     hapticManager: HapticFeedbackManager,
     onSelectProfile: (profile: ControllerProfile) -> Unit,
     onOpenEditor: () -> Unit,
-    onReportStateChanged: (updater: (GamepadReport) -> GamepadReport) -> Unit
+    onReportStateChanged: (updater: (GamepadReport) -> GamepadReport) -> Unit,
+    onTouchpadReport: (TouchpadReport) -> Unit
 ) {
     var canvasSize by remember { mutableStateOf(IntSize(1000, 1000)) }
     var profileMenuExpanded by remember { mutableStateOf(false) }
@@ -91,16 +95,17 @@ fun MainControllerScreen(
 
         innerElements.forEach { elem ->
             val elemWidthPx = canvasSize.width * elem.sizePercent
-            val elemHeightPx = elemWidthPx
 
             val elemWidthDp = with(density) { elemWidthPx.toDp() }
-            val elemHeightDp = elemWidthDp
+            val elemHeightDp = if (elem.type == ControllerElementType.TOUCHPAD) elemWidthDp * 0.65f else elemWidthDp
 
             val posX = (canvasSize.width * elem.xPercent - elemWidthPx / 2f)
                 .coerceIn(0f, (canvasSize.width - elemWidthPx).coerceAtLeast(0f))
-            val posY = (canvasSize.height * elem.yPercent - elemHeightPx / 2f)
-                .coerceIn(0f, (canvasSize.height - elemHeightPx).coerceAtLeast(0f))
+            val actualHeightPx = with(density) { elemHeightDp.toPx() }
+            val posY = (canvasSize.height * elem.yPercent - actualHeightPx / 2f)
+                .coerceIn(0f, (canvasSize.height - actualHeightPx).coerceAtLeast(0f))
 
+            key(currentProfile.id, elem.id, elem.type, elem.mappedHidBitOrAxis) {
             Box(
                 modifier = Modifier
                     .offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
@@ -108,6 +113,20 @@ fun MainControllerScreen(
             ) {
 
                 when (elem.type) {
+                    ControllerElementType.TOUCHPAD -> {
+                        VirtualTouchpad(
+                            modifier = Modifier.fillMaxSize(),
+                            onTouchChanged = onTouchpadReport,
+                            onClickChanged = { pressed ->
+                                if (pressed) hapticManager.performClickHaptic(elem.hapticIntensity)
+                                updateAndSendReport { rep -> rep.copy(buttonsMask = if (pressed) {
+                                    rep.buttonsMask or GamepadReport.BUTTON_TOUCHPAD
+                                } else {
+                                    rep.buttonsMask and GamepadReport.BUTTON_TOUCHPAD.inv()
+                                }) }
+                            }
+                        )
+                    }
                     ControllerElementType.JOYSTICK_LEFT -> {
                         VirtualJoystick(
                             modifier = Modifier.fillMaxSize(),
@@ -200,6 +219,7 @@ fun MainControllerScreen(
                         )
                     }
                 }
+            }
             }
         }
 

@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,9 +49,11 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.virtualcontroller.model.ControllerElement
+import com.virtualcontroller.model.ControllerElementType
 import com.virtualcontroller.model.ControllerProfile
 import com.virtualcontroller.model.TargetScreen
 import kotlin.math.roundToInt
@@ -59,12 +63,14 @@ import kotlin.math.roundToInt
 @Composable
 fun LayoutEditorScreen(
     profile: ControllerProfile,
+    outerViewport: DpSize,
     onSaveProfile: (updatedProfile: ControllerProfile) -> Unit,
     onCancel: () -> Unit
 ) {
     var elements by remember { mutableStateOf(profile.elements) }
     var selectedElementId by remember { mutableStateOf<String?>(null) }
     var canvasSize by remember { mutableStateOf(IntSize(1000, 1000)) }
+    var editingScreen by remember { mutableStateOf(TargetScreen.INNER_SCREEN) }
 
     val density = LocalDensity.current
     val selectedElement = elements.find { it.id == selectedElementId }
@@ -73,17 +79,24 @@ fun LayoutEditorScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF0F172A))
-            .onSizeChanged { canvasSize = it }
     ) {
         // --- Drag & Drop Canvas Overlay ---
-        Box(modifier = Modifier.fillMaxSize()) {
-            elements.forEach { elem ->
+        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(top = 80.dp, end = 280.dp)) {
+          val previewModifier = if (editingScreen == TargetScreen.OUTER_SCREEN) {
+              Modifier.align(Alignment.Center).aspectRatio(outerViewport.width / outerViewport.height)
+          } else Modifier.fillMaxSize()
+          Box(modifier = previewModifier.background(Color(0xFF090D16)).onSizeChanged { canvasSize = it }) {
+            elements.filter { it.targetScreen == editingScreen }.forEach { elem ->
                 val isSelected = elem.id == selectedElementId
-                val elemWidthPx = canvasSize.width * elem.sizePercent
-                val elemHeightPx = elemWidthPx
+                val elemWidthPx = if (editingScreen == TargetScreen.OUTER_SCREEN) {
+                    val actualSize = (minOf(outerViewport.width, outerViewport.height) * elem.sizePercent)
+                        .coerceIn(64.dp, 96.dp).coerceAtMost(minOf(outerViewport.width, outerViewport.height))
+                    canvasSize.width * (actualSize / outerViewport.width)
+                } else canvasSize.width * elem.sizePercent
+                val elemHeightPx = if (elem.type == ControllerElementType.TOUCHPAD) elemWidthPx * 0.65f else elemWidthPx
 
                 val elemWidthDp = with(density) { elemWidthPx.toDp() }
-                val elemHeightDp = elemWidthDp
+                val elemHeightDp = with(density) { elemHeightPx.toDp() }
 
                 val posX = (canvasSize.width * elem.xPercent - elemWidthPx / 2f)
                     .coerceIn(0f, (canvasSize.width - elemWidthPx).coerceAtLeast(0f))
@@ -113,8 +126,9 @@ fun LayoutEditorScreen(
                                 onDragStart = { selectedElementId = elem.id },
                                 onDrag = { change, dragAmount ->
                                     change.consume()
-                                    val newXPercent = ((canvasSize.width * elem.xPercent + dragAmount.x) / canvasSize.width).coerceIn(0.05f, 0.95f)
-                                    val newYPercent = ((canvasSize.height * elem.yPercent + dragAmount.y) / canvasSize.height).coerceIn(0.05f, 0.95f)
+                                    val current = elements.find { it.id == elem.id } ?: return@detectDragGestures
+                                    val newXPercent = (current.xPercent + dragAmount.x / canvasSize.width.coerceAtLeast(1)).coerceIn(0.05f, 0.95f)
+                                    val newYPercent = (current.yPercent + dragAmount.y / canvasSize.height.coerceAtLeast(1)).coerceIn(0.05f, 0.95f)
 
                                     elements = elements.map {
                                         if (it.id == elem.id) it.copy(xPercent = newXPercent, yPercent = newYPercent) else it
@@ -138,6 +152,7 @@ fun LayoutEditorScreen(
                     }
                 }
             }
+          }
         }
 
         // --- Top Bar Actions ---
@@ -148,12 +163,12 @@ fun LayoutEditorScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Editing Layout: ${profile.name}",
-                color = Color.White,
-                fontSize = 18.sp,
-                style = MaterialTheme.typography.titleMedium
-            )
+            Button(onClick = {
+                editingScreen = if (editingScreen == TargetScreen.INNER_SCREEN) TargetScreen.OUTER_SCREEN else TargetScreen.INNER_SCREEN
+                selectedElementId = null
+            }) {
+                Text(if (editingScreen == TargetScreen.INNER_SCREEN) "Editing inner · Switch" else "Editing outer · Switch")
+            }
 
             Row {
                 Button(
@@ -239,9 +254,11 @@ fun LayoutEditorScreen(
 
                     // Cross-Screen Target Toggle (Inner vs Outer Cover Screen)
                     Button(
+                        enabled = elem.type != ControllerElementType.TOUCHPAD,
                         onClick = {
                             val nextTarget = if (elem.targetScreen == TargetScreen.INNER_SCREEN) TargetScreen.OUTER_SCREEN else TargetScreen.INNER_SCREEN
                             elements = elements.map { if (it.id == elem.id) it.copy(targetScreen = nextTarget) else it }
+                            editingScreen = nextTarget
                         },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (elem.targetScreen == TargetScreen.OUTER_SCREEN) Color(0xFFE91E63) else Color(0xFF009688)

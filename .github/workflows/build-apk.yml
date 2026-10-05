@@ -34,7 +34,7 @@ jobs:
 
     - name: Test and Build Debug APK
       run: |
-        ./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace > build.log 2>&1 || (
+        ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --no-daemon --stacktrace > build.log 2>&1 || (
           echo "## Gradle Build Error Output" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 120 build.log >> $GITHUB_STEP_SUMMARY
@@ -56,3 +56,13 @@ jobs:
       with:
         name: VirtualController-Debug-APK
         path: app/build/outputs/apk/debug/*.apk
+
+    - name: Upload Verification Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: controller-verification-reports
+        path: |
+          app/build/reports/tests/testDebugUnitTest/
+          app/build/test-results/testDebugUnitTest/
+          app/build/reports/lint-results-debug.html

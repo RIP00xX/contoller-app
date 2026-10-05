@@ -20,7 +20,8 @@ enum class ControllerElementType {
     BUTTON_START,
     BUTTON_SELECT,
     BUTTON_MODE,
-    STEERING_WHEEL
+    STEERING_WHEEL,
+    TOUCHPAD
 }
 
 data class ControllerElement(

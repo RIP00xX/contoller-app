@@ -95,6 +95,7 @@ class ProfileRepository(private val context: Context) {
             isPreset = true,
             elements = listOf(
                 // Inner Screen Controls
+                ControllerElement("touchpad", ControllerElementType.TOUCHPAD, "Touchpad", TargetScreen.INNER_SCREEN, 0.50f, 0.43f, 0.24f, 0.90f, 0.7f, GamepadReport.BUTTON_TOUCHPAD),
                 ControllerElement("dpad", ControllerElementType.DPAD, "D-Pad", TargetScreen.INNER_SCREEN, 0.18f, 0.35f, 0.28f, 0.85f, 0.7f),
                 ControllerElement("joy_left", ControllerElementType.JOYSTICK_LEFT, "L3 Stick", TargetScreen.INNER_SCREEN, 0.30f, 0.72f, 0.26f, 0.85f, 0.8f, GamepadReport.BUTTON_L3),
                 ControllerElement("joy_right", ControllerElementType.JOYSTICK_RIGHT, "R3 Stick", TargetScreen.INNER_SCREEN, 0.70f, 0.72f, 0.26f, 0.85f, 0.8f, GamepadReport.BUTTON_R3),
@@ -119,10 +120,11 @@ class ProfileRepository(private val context: Context) {
         return ControllerProfile(
             id = "preset_xbox",
             name = "Xbox Wireless Layout",
-            description = "Asymmetrical joysticks with high-sensitivity triggers",
+            description = "Asymmetrical joysticks with outer-screen shoulder buttons",
             isPreset = true,
             elements = listOf(
                 // Inner Screen Controls
+                ControllerElement("touchpad", ControllerElementType.TOUCHPAD, "Touchpad", TargetScreen.INNER_SCREEN, 0.50f, 0.43f, 0.24f, 0.90f, 0.7f, GamepadReport.BUTTON_TOUCHPAD),
                 ControllerElement("joy_left", ControllerElementType.JOYSTICK_LEFT, "LS", TargetScreen.INNER_SCREEN, 0.18f, 0.32f, 0.28f, 0.85f, 0.8f, GamepadReport.BUTTON_L3),
                 ControllerElement("dpad", ControllerElementType.DPAD, "D-Pad", TargetScreen.INNER_SCREEN, 0.32f, 0.72f, 0.26f, 0.85f, 0.7f),
                 ControllerElement("joy_right", ControllerElementType.JOYSTICK_RIGHT, "RS", TargetScreen.INNER_SCREEN, 0.68f, 0.72f, 0.26f, 0.85f, 0.8f, GamepadReport.BUTTON_R3),
@@ -147,7 +149,7 @@ class ProfileRepository(private val context: Context) {
         return ControllerProfile(
             id = "preset_racing",
             name = "Racing Wheel & Throttle",
-            description = "Central steering wheel with outer-screen analog brake and throttle sliders",
+            description = "Central steering wheel with outer-screen brake and throttle buttons",
             isPreset = true,
             elements = listOf(
                 // Inner Screen Steering Wheel & Quick Actions
@@ -156,7 +158,7 @@ class ProfileRepository(private val context: Context) {
                 ControllerElement("btn_handbrake", ControllerElementType.BUTTON_X, "Handbrake", TargetScreen.INNER_SCREEN, 0.15f, 0.30f, 0.15f, 0.90f, 0.9f, GamepadReport.BUTTON_X),
                 ControllerElement("btn_pause", ControllerElementType.BUTTON_START, "Pause", TargetScreen.INNER_SCREEN, 0.50f, 0.15f, 0.08f, 0.80f, 0.5f, GamepadReport.BUTTON_START),
 
-                // Outer Screen Throttle & Brake Analog Sliders
+                // Outer Screen Throttle & Brake Buttons
                 ControllerElement("outer_l2", ControllerElementType.TRIGGER_L2, "Brake (L2)", TargetScreen.OUTER_SCREEN, 0.25f, 0.50f, 0.45f, 0.95f, 0.9f),
                 ControllerElement("outer_r2", ControllerElementType.TRIGGER_R2, "Throttle (R2)", TargetScreen.OUTER_SCREEN, 0.75f, 0.50f, 0.45f, 0.95f, 0.9f)
             )

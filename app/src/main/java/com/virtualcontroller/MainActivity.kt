@@ -24,6 +24,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
@@ -31,6 +33,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.virtualcontroller.bt.BluetoothHidService
 import com.virtualcontroller.bt.GamepadReport
 import com.virtualcontroller.bt.ControllerInputState
+import com.virtualcontroller.bt.TouchpadReport
 import com.virtualcontroller.bt.HidConnectionState
 import com.virtualcontroller.data.ProfileRepository
 import com.virtualcontroller.foldable.DevicePosture
@@ -50,6 +53,7 @@ class MainActivity : ComponentActivity() {
     private var isServiceBound by mutableStateOf(false)
     private var currentPosture by mutableStateOf(DevicePosture.CLOSED)
     private val inputState = ControllerInputState()
+    private var outerViewport by mutableStateOf(DpSize(345.dp, 881.dp))
 
     private fun updateAndSendReport(updater: (GamepadReport) -> GamepadReport) {
         val updated = inputState.update(updater)
@@ -119,13 +123,15 @@ class MainActivity : ComponentActivity() {
                 // Update content without recreating an active dual-screen session.
                 LaunchedEffect(activeProfile, isEditMode) {
                     updateAndSendReport { GamepadReport() }
+                    hidService?.hidManager?.sendTouchpadReport(TouchpadReport())
                     val hasOuterElements = activeProfile.elements.any { it.targetScreen == TargetScreen.OUTER_SCREEN }
                     if (hasOuterElements && !isEditMode) {
                         dualScreenManager.setOuterScreenContent {
                             OuterControllerScreen(
                                 currentProfile = activeProfile,
                                 hapticManager = hapticManager,
-                                onReportStateChanged = ::updateAndSendReport
+                                onReportStateChanged = ::updateAndSendReport,
+                                onViewportChanged = { outerViewport = it }
                             )
                         }
                     } else {
@@ -147,6 +153,7 @@ class MainActivity : ComponentActivity() {
                 if (isEditMode) {
                     LayoutEditorScreen(
                         profile = activeProfile,
+                        outerViewport = outerViewport,
                         onSaveProfile = { updated ->
                             scope.launch {
                                 profileRepository.saveCustomProfile(updated)
@@ -170,7 +177,8 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                         onOpenEditor = { isEditMode = true },
-                        onReportStateChanged = ::updateAndSendReport
+                        onReportStateChanged = ::updateAndSendReport,
+                        onTouchpadReport = { hidService?.hidManager?.sendTouchpadReport(it) }
                     )
                 }
             }
@@ -210,6 +218,7 @@ class MainActivity : ComponentActivity() {
     override fun onStop() {
         dualScreenManager.dismissOuterScreen()
         updateAndSendReport { GamepadReport() }
+        hidService?.hidManager?.sendTouchpadReport(TouchpadReport())
         super.onStop()
     }
 

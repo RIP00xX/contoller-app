@@ -35,8 +35,10 @@ class BluetoothHidManager(private val context: Context) {
     private val TAG = "BluetoothHidManager"
 
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-    private var hidDevice: BluetoothHidDevice? = null
-    private var hostDevice: BluetoothDevice? = null
+    @Volatile private var hidDevice: BluetoothHidDevice? = null
+    @Volatile private var hostDevice: BluetoothDevice? = null
+    @Volatile private var lastGamepadReport = GamepadReport()
+    @Volatile private var lastTouchpadReport = TouchpadReport()
 
     private val _connectionState = MutableStateFlow<HidConnectionState>(HidConnectionState.Idle)
     val connectionState: StateFlow<HidConnectionState> = _connectionState.asStateFlow()
@@ -56,6 +58,7 @@ class BluetoothHidManager(private val context: Context) {
             if (profile == BluetoothProfile.HID_DEVICE) {
                 Log.d(TAG, "HID Device Profile Disconnected")
                 hidDevice = null
+                hostDevice = null
                 _connectionState.value = HidConnectionState.Idle
             }
         }
@@ -71,6 +74,7 @@ class BluetoothHidManager(private val context: Context) {
                     _connectionState.value = HidConnectionState.Connected(device, device.name ?: device.address)
                 }
             } else {
+                hostDevice = null
                 _connectionState.value = HidConnectionState.Idle
             }
         }
@@ -87,6 +91,8 @@ class BluetoothHidManager(private val context: Context) {
                 BluetoothProfile.STATE_DISCONNECTED -> {
                     if (device == hostDevice) {
                         hostDevice = null
+                        lastGamepadReport = GamepadReport()
+                        lastTouchpadReport = TouchpadReport()
                         _connectionState.value = HidConnectionState.Registered
                     }
                 }
@@ -95,12 +101,33 @@ class BluetoothHidManager(private val context: Context) {
 
         override fun onGetReport(device: BluetoothDevice?, type: Byte, id: Byte, bufferSize: Int) {
             Log.d(TAG, "onGetReport requested")
-            // Host queried input report, send current default report
-            hidDevice?.replyReport(device, type, id, GamepadReport().toByteArray())
+            if (device == null) return
+            if (type == BluetoothHidDevice.REPORT_TYPE_FEATURE && id == HidReportDescriptor.REPORT_ID_TOUCHPAD_CAPABILITIES) {
+                hidDevice?.replyReport(device, type, id, byteArrayOf(1))
+                return
+            }
+            if (type != BluetoothHidDevice.REPORT_TYPE_INPUT) {
+                hidDevice?.reportError(device, BluetoothHidDevice.ERROR_RSP_UNSUPPORTED_REQ)
+                return
+            }
+            val data = when (id) {
+                HidReportDescriptor.REPORT_ID_GAMEPAD -> lastGamepadReport.toByteArray()
+                HidReportDescriptor.REPORT_ID_TOUCHPAD -> lastTouchpadReport.toByteArray()
+                else -> {
+                    hidDevice?.reportError(device, BluetoothHidDevice.ERROR_RSP_INVALID_RPT_ID)
+                    return
+                }
+            }
+            if (bufferSize > 0 && bufferSize < data.size) {
+                hidDevice?.reportError(device, BluetoothHidDevice.ERROR_RSP_INVALID_PARAM)
+                return
+            }
+            hidDevice?.replyReport(device, type, id, data)
         }
 
         override fun onSetReport(device: BluetoothDevice?, type: Byte, id: Byte, data: ByteArray?) {
             Log.d(TAG, "onSetReport received from host")
+            if (device != null) hidDevice?.reportError(device, BluetoothHidDevice.ERROR_RSP_UNSUPPORTED_REQ)
         }
     }
 
@@ -124,8 +151,8 @@ class BluetoothHidManager(private val context: Context) {
             "Virtual Gamepad",
             "Foldable Bluetooth Controller",
             "Antigravity",
-            BluetoothHidDevice.SUBCLASS1_COMBO,
-            HidReportDescriptor.GAMEPAD_DESCRIPTOR
+            BluetoothHidDevice.SUBCLASS2_GAMEPAD,
+            HidReportDescriptor.CONTROLLER_DESCRIPTOR
         )
 
         val qosSettings = BluetoothHidDeviceAppQosSettings(
@@ -138,13 +165,14 @@ class BluetoothHidManager(private val context: Context) {
         )
 
         try {
-            hidDevice?.registerApp(
+            val accepted = hidDevice?.registerApp(
                 sdpSettings,
                 qosSettings,
                 null,
                 executor,
                 hidCallback
             )
+            if (accepted != true) _connectionState.value = HidConnectionState.Error("HID registration was rejected")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to register HID App SDP", e)
             _connectionState.value = HidConnectionState.Error("SDP Register Error: ${e.localizedMessage}")
@@ -155,12 +183,19 @@ class BluetoothHidManager(private val context: Context) {
      * Sends low-latency input report byte array to connected host device.
      */
     fun sendReport(report: GamepadReport) {
+        lastGamepadReport = report
         val device = hostDevice
         val proxy = hidDevice
         if (proxy != null && device != null) {
             val reportBytes = report.toByteArray()
             proxy.sendReport(device, HidReportDescriptor.REPORT_ID_GAMEPAD.toInt(), reportBytes)
         }
+    }
+
+    fun sendTouchpadReport(report: TouchpadReport) {
+        lastTouchpadReport = report
+        val device = hostDevice ?: return
+        hidDevice?.sendReport(device, HidReportDescriptor.REPORT_ID_TOUCHPAD.toInt(), report.toByteArray())
     }
 
     /**
@@ -172,6 +207,10 @@ class BluetoothHidManager(private val context: Context) {
             bluetoothAdapter?.closeProfileProxy(BluetoothProfile.HID_DEVICE, hidDevice)
         } catch (e: Exception) {
             Log.e(TAG, "Error unregistering HID", e)
+        } finally {
+            hostDevice = null
+            hidDevice = null
+            executor.shutdown()
         }
     }
 }

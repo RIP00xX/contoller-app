@@ -23,6 +23,8 @@ package com.virtualcontroller.bt
 object HidReportDescriptor {
 
     const val REPORT_ID_GAMEPAD = 1.toByte()
+    const val REPORT_ID_TOUCHPAD = 2.toByte()
+    const val REPORT_ID_TOUCHPAD_CAPABILITIES = 3.toByte()
 
     val GAMEPAD_DESCRIPTOR = byteArrayOf(
         0x05.toByte(), 0x01.toByte(), // USAGE_PAGE (Generic Desktop)
@@ -62,7 +64,7 @@ object HidReportDescriptor {
         0x65.toByte(), 0x14.toByte(), //   UNIT (English Rotation: Angular Degrees)
         0x75.toByte(), 0x04.toByte(), //   REPORT_SIZE (4)
         0x95.toByte(), 0x01.toByte(), //   REPORT_COUNT (1)
-        0x81.toByte(), 0x02.toByte(), //   INPUT (Data,Var,Abs)
+        0x81.toByte(), 0x42.toByte(), //   INPUT (Data,Var,Abs,Null State): 8 means released
 
         // D-Pad Padding (4 bits)
         0x75.toByte(), 0x04.toByte(), //   REPORT_SIZE (4)
@@ -70,6 +72,9 @@ object HidReportDescriptor {
         0x81.toByte(), 0x03.toByte(), //   INPUT (Cnst,Var,Abs)
 
         // --- 16 Digital Buttons ---
+        0x65.toByte(), 0x00.toByte(), //   UNIT (None)
+        0x35.toByte(), 0x00.toByte(), //   PHYSICAL_MINIMUM (0)
+        0x45.toByte(), 0x00.toByte(), //   PHYSICAL_MAXIMUM (0)
         0x05.toByte(), 0x09.toByte(), //   USAGE_PAGE (Button)
         0x19.toByte(), 0x01.toByte(), //   USAGE_MINIMUM (Button 1)
         0x29.toByte(), 0x10.toByte(), //   USAGE_MAXIMUM (Button 16)
@@ -81,4 +86,29 @@ object HidReportDescriptor {
 
         0xC0.toByte()                 // END_COLLECTION
     )
+
+    private val TOUCHPAD_DESCRIPTOR = byteArrayOf(
+        0x05, 0x0D, 0x09, 0x05, 0xA1.toByte(), 0x01, // Digitizer / Touch Pad application
+        0x85.toByte(), REPORT_ID_TOUCHPAD,
+        0x09, 0x22, 0xA1.toByte(), 0x02, // Finger logical collection
+        0x65, 0x00, 0x35, 0x00, 0x45, 0x00, // Clear inherited units/physical range
+        0x09, 0x42, 0x09, 0x32, 0x09, 0x47, // Tip switch, in range, confidence
+        0x15, 0x00, 0x25, 0x01,
+        0x75, 0x01, 0x95.toByte(), 0x03, 0x81.toByte(), 0x02,
+        0x75, 0x05, 0x95.toByte(), 0x01, 0x81.toByte(), 0x03, // Padding
+        0x09, 0x51, 0x15, 0x00, 0x25, 0x7F, // Contact identifier
+        0x75, 0x08, 0x95.toByte(), 0x01, 0x81.toByte(), 0x02,
+        0x05, 0x01, 0x09, 0x30, // Absolute X, 0..1919
+        0x15, 0x00, 0x26, 0x7F, 0x07,
+        0x75, 0x10, 0x95.toByte(), 0x01, 0x81.toByte(), 0x02,
+        0x09, 0x31, 0x26, 0x37, 0x04, // Absolute Y, 0..1079
+        0x81.toByte(), 0x02, 0xC0.toByte(),
+        0x05, 0x0D, 0x09, 0x54, 0x15, 0x00, 0x25, 0x01, // Contact count
+        0x75, 0x08, 0x95.toByte(), 0x01, 0x81.toByte(), 0x02,
+        0x85.toByte(), REPORT_ID_TOUCHPAD_CAPABILITIES,
+        0x09, 0x55, 0xB1.toByte(), 0x02, // Maximum contact count feature: 1
+        0xC0.toByte()
+    )
+
+    val CONTROLLER_DESCRIPTOR = GAMEPAD_DESCRIPTOR + TOUCHPAD_DESCRIPTOR
 }

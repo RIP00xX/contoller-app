@@ -5,6 +5,18 @@ import org.junit.Test
 
 class ControllerInputStateTest {
     @Test
+    fun touchpadClickDoesNotReleaseSticksOrShoulderButtons() {
+        val state = ControllerInputState()
+        state.update { it.copy(leftStickX = 230, l2Trigger = 255, buttonsMask = GamepadReport.BUTTON_R1) }
+        val pressed = state.update { it.copy(buttonsMask = it.buttonsMask or GamepadReport.BUTTON_TOUCHPAD) }
+        assertEquals(GamepadReport.BUTTON_R1 or GamepadReport.BUTTON_TOUCHPAD, pressed.buttonsMask)
+        val released = state.update { it.copy(buttonsMask = it.buttonsMask and GamepadReport.BUTTON_TOUCHPAD.inv()) }
+        assertEquals(230, released.leftStickX)
+        assertEquals(255, released.l2Trigger)
+        assertEquals(GamepadReport.BUTTON_R1, released.buttonsMask)
+    }
+
+    @Test
     fun outerControlsPreserveInnerStickAndButtons() {
         val state = ControllerInputState()
         state.update { it.copy(leftStickX = 210, buttonsMask = GamepadReport.BUTTON_A) }
