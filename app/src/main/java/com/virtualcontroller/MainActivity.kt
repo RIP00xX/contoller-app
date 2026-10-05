@@ -112,12 +112,12 @@ class MainActivity : ComponentActivity() {
                                     currentProfile = activeProfile,
                                     hapticManager = hapticManager,
                                     onReportStateChanged = { updater ->
-                                        val updated = updater(activeReport)
-                                        activeReport = updated
-                                        hidService?.sendGamepadReport(updated)
+                                        val updated = updater(GamepadReport())
+                                        hidService?.hidManager?.sendReport(updated)
                                         updated
                                     }
                                 )
+
 
                             }
                         } else {
