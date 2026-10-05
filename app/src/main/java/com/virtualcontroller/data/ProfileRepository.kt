@@ -60,7 +60,7 @@ class ProfileRepository(private val context: Context) {
             val existing: MutableList<ControllerProfile> = if (currentJson.isNullOrEmpty()) {
                 mutableListOf()
             } else {
-                gson.fromJson<List<ControllerProfile>>(currentJson, type).toMutableList()
+                (gson.fromJson(currentJson, type) as? List<ControllerProfile>)?.toMutableList() ?: mutableListOf()
             }
 
             val index = existing.indexOfFirst { it.id == profile.id }
@@ -78,11 +78,12 @@ class ProfileRepository(private val context: Context) {
         context.dataStore.edit { prefs ->
             val currentJson = prefs[PROFILES_KEY] ?: return@edit
             val type = object : TypeToken<List<ControllerProfile>>() {}.type
-            val existing: MutableList<ControllerProfile> = gson.fromJson(currentJson, type)
+            val existing: MutableList<ControllerProfile> = (gson.fromJson(currentJson, type) as? List<ControllerProfile>)?.toMutableList() ?: mutableListOf()
             existing.removeAll { it.id == profileId }
             prefs[PROFILES_KEY] = gson.toJson(existing)
         }
     }
+
 
     // --- PRESET GENERATION LOGIC ---
 

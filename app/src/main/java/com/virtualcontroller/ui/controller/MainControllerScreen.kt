@@ -16,7 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.Settings
+
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -223,7 +224,8 @@ fun MainControllerScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 Icon(
-                    imageVector = Icons.Default.Bluetooth,
+                    imageVector = Icons.Default.Settings,
+
                     contentDescription = "Bluetooth Status",
                     tint = statusColor,
                     modifier = Modifier.size(16.dp)
