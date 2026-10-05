@@ -17,9 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
-import androidx.compose.material.icons.filled.BluetoothConnected
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -225,7 +223,7 @@ fun MainControllerScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 Icon(
-                    imageVector = if (connectionState is HidConnectionState.Connected) Icons.Default.BluetoothConnected else Icons.Default.Bluetooth,
+                    imageVector = Icons.Default.Bluetooth,
                     contentDescription = "Bluetooth Status",
                     tint = statusColor,
                     modifier = Modifier.size(16.dp)
@@ -259,7 +257,7 @@ fun MainControllerScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B)),
                         shape = RoundedCornerShape(20.dp)
                     ) {
-                        Icon(Icons.Default.SwapHoriz, contentDescription = "Switch Profile", tint = Color(0xFF00E5FF))
+                        Icon(Icons.Default.Edit, contentDescription = "Switch Profile", tint = Color(0xFF00E5FF))
                         Spacer(Modifier.width(6.dp))
                         Text(text = currentProfile.name, color = Color.White, fontSize = 12.sp)
                     }

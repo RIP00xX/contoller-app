@@ -21,8 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.ScreenRotation
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -238,7 +237,7 @@ fun LayoutEditorScreen(
                         ),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Default.ScreenRotation, contentDescription = "Screen Target")
+                        Icon(Icons.Default.Refresh, contentDescription = "Screen Target")
                         Spacer(Modifier.width(8.dp))
                         Text(text = if (elem.targetScreen == TargetScreen.OUTER_SCREEN) "Target: Outer Screen" else "Target: Inner Screen")
                     }

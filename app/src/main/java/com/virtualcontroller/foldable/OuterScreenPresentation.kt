@@ -36,6 +36,12 @@ class OuterScreenPresentation(
         }
 
         val composeView = ComposeView(context).apply {
+            (outerContext as? androidx.lifecycle.LifecycleOwner)?.let { owner ->
+                setViewTreeLifecycleOwner(owner)
+            }
+            (outerContext as? androidx.savedstate.SavedStateRegistryOwner)?.let { owner ->
+                setViewTreeSavedStateRegistryOwner(owner)
+            }
             setContent {
                 content()
             }

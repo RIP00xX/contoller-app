@@ -124,10 +124,8 @@ class MainActivity : ComponentActivity() {
                 // Poll Connection State from Service
                 DisposableEffect(isServiceBound) {
                     val job = scope.launch {
-                        while (true) {
-                            hidService?.hidManager?.connectionState?.collectLatest { state ->
-                                connectionState = state
-                            }
+                        hidService?.hidManager?.connectionState?.collectLatest { state ->
+                            connectionState = state
                         }
                     }
                     onDispose { job.cancel() }
