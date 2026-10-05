@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.virtualcontroller"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.virtualcontroller"
         minSdk = 29 // Android 10+ for Bluetooth HID Device API and modern WindowManager features
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
 
