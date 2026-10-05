@@ -42,15 +42,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.virtualcontroller.model.ControllerElement
-import com.virtualcontroller.model.ControllerProfile
-import com.virtualcontroller.model.TargetScreen
-import kotlin.math.roundToInt
 
 @Composable
 fun LayoutEditorScreen(
@@ -62,6 +58,7 @@ fun LayoutEditorScreen(
     var selectedElementId by remember { mutableStateOf<String?>(null) }
     var canvasSize by remember { mutableStateOf(IntSize(1000, 1000)) }
 
+    val density = LocalDensity.current
     val selectedElement = elements.find { it.id == selectedElementId }
 
     Box(
@@ -74,16 +71,22 @@ fun LayoutEditorScreen(
         Box(modifier = Modifier.fillMaxSize()) {
             elements.forEach { elem ->
                 val isSelected = elem.id == selectedElementId
-                val widthPx = canvasSize.width * elem.sizePercent
-                val heightPx = widthPx // Keep square aspect ratio for buttons/sticks
+                val elemWidthPx = canvasSize.width * elem.sizePercent
+                val elemHeightPx = elemWidthPx
 
-                val posX = (canvasSize.width * elem.xPercent - widthPx / 2f).coerceIn(0f, canvasSize.width - widthPx)
-                val posY = (canvasSize.height * elem.yPercent - heightPx / 2f).coerceIn(0f, canvasSize.height - heightPx)
+                val elemWidthDp = with(density) { elemWidthPx.toDp() }
+                val elemHeightDp = elemWidthDp
+
+                val posX = (canvasSize.width * elem.xPercent - elemWidthPx / 2f)
+                    .coerceIn(0f, (canvasSize.width - elemWidthPx).coerceAtLeast(0f))
+                val posY = (canvasSize.height * elem.yPercent - elemHeightPx / 2f)
+                    .coerceIn(0f, (canvasSize.height - elemHeightPx).coerceAtLeast(0f))
 
                 Box(
                     modifier = Modifier
                         .offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
-                        .size(widthPx.dp, heightPx.dp)
+                        .size(elemWidthDp, elemHeightDp)
+
                         .border(
                             width = if (isSelected) 3.dp else 1.dp,
                             color = if (isSelected) Color(0xFF00E5FF) else Color.White.copy(alpha = 0.3f),

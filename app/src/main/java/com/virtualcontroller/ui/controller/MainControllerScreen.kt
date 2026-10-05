@@ -35,24 +35,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.virtualcontroller.bt.GamepadReport
-import com.virtualcontroller.bt.HidConnectionState
-import com.virtualcontroller.foldable.DevicePosture
-import com.virtualcontroller.haptics.HapticFeedbackManager
-import com.virtualcontroller.model.ControllerElementType
-import com.virtualcontroller.model.ControllerProfile
-import com.virtualcontroller.model.TargetScreen
-import com.virtualcontroller.ui.components.VirtualButton
-import com.virtualcontroller.ui.components.VirtualDPad
-import com.virtualcontroller.ui.components.VirtualJoystick
-import com.virtualcontroller.ui.components.VirtualSteeringWheel
-import com.virtualcontroller.ui.components.VirtualTriggerSlider
-import kotlin.math.roundToInt
 
 @Composable
 fun MainControllerScreen(
@@ -68,6 +55,8 @@ fun MainControllerScreen(
     var activeReport by remember { mutableStateOf(GamepadReport()) }
     var canvasSize by remember { mutableStateOf(IntSize(1000, 1000)) }
     var profileMenuExpanded by remember { mutableStateOf(false) }
+
+    val density = LocalDensity.current
 
     fun updateAndSendReport(updater: (GamepadReport) -> GamepadReport) {
         val updated = updater(activeReport)
@@ -85,17 +74,23 @@ fun MainControllerScreen(
         val innerElements = currentProfile.elements.filter { it.targetScreen == TargetScreen.INNER_SCREEN }
 
         innerElements.forEach { elem ->
-            val widthPx = canvasSize.width * elem.sizePercent
-            val heightPx = widthPx
+            val elemWidthPx = canvasSize.width * elem.sizePercent
+            val elemHeightPx = elemWidthPx
 
-            val posX = (canvasSize.width * elem.xPercent - widthPx / 2f).coerceIn(0f, canvasSize.width - widthPx)
-            val posY = (canvasSize.height * elem.yPercent - heightPx / 2f).coerceIn(0f, canvasSize.height - heightPx)
+            val elemWidthDp = with(density) { elemWidthPx.toDp() }
+            val elemHeightDp = elemWidthDp
+
+            val posX = (canvasSize.width * elem.xPercent - elemWidthPx / 2f)
+                .coerceIn(0f, (canvasSize.width - elemWidthPx).coerceAtLeast(0f))
+            val posY = (canvasSize.height * elem.yPercent - elemHeightPx / 2f)
+                .coerceIn(0f, (canvasSize.height - elemHeightPx).coerceAtLeast(0f))
 
             Box(
                 modifier = Modifier
                     .offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
-                    .size(widthPx.dp, heightPx.dp)
+                    .size(elemWidthDp, elemHeightDp)
             ) {
+
                 when (elem.type) {
                     ControllerElementType.JOYSTICK_LEFT -> {
                         VirtualJoystick(

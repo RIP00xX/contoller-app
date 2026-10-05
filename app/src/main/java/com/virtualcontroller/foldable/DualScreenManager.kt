@@ -20,14 +20,16 @@ class DualScreenManager(private val context: Context) {
         dismissOuterScreen()
 
         val displays = displayManager.displays
-        Log.d(TAG, "Available displays count: ${displays.size}")
+        val presentationDisplays = displayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_PRESENTATION)
+        Log.d(TAG, "Total displays: ${displays.size}, Presentation displays: ${presentationDisplays.size}")
 
-        // Secondary display for outer screen presentation
-        val outerDisplay: Display? = displays.firstOrNull { it.displayId != Display.DEFAULT_DISPLAY }
+        val outerDisplay: Display? = presentationDisplays.firstOrNull()
+            ?: displays.firstOrNull { it.displayId != Display.DEFAULT_DISPLAY }
 
         if (outerDisplay != null) {
             try {
-                presentationWindow = OuterScreenPresentation(context, outerDisplay, content).apply {
+                val outerDisplayContext = context.createDisplayContext(outerDisplay)
+                presentationWindow = OuterScreenPresentation(outerDisplayContext, outerDisplay, content).apply {
                     show()
                 }
                 Log.d(TAG, "Successfully showed OuterScreenPresentation on displayId=${outerDisplay.displayId}")
@@ -38,6 +40,7 @@ class DualScreenManager(private val context: Context) {
             Log.d(TAG, "No secondary display available for dual-screen mode")
         }
     }
+
 
     /**
      * Dismisses the secondary presentation window.

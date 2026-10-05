@@ -27,15 +27,19 @@ class OuterScreenPresentation(
         super.onCreate(savedInstanceState)
 
 
-        // Configure Window for Concurrent Multi-Display Touch Registration
+        // Configure Window for Concurrent Multi-Display Touch Registration & Screen Backlight Activation
         window?.apply {
             addFlags(
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
-                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
+                WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
             )
             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         }
+
 
         val composeView = ComposeView(context).apply {
             (outerContext as? androidx.lifecycle.LifecycleOwner)?.let { owner ->

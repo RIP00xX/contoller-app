@@ -112,9 +112,13 @@ class MainActivity : ComponentActivity() {
                                     currentProfile = activeProfile,
                                     hapticManager = hapticManager,
                                     onReportStateChanged = { updater ->
-                                        // Update HID report state
+                                        val updated = updater(activeReport)
+                                        activeReport = updated
+                                        hidService?.sendGamepadReport(updated)
+                                        updated
                                     }
                                 )
+
                             }
                         } else {
                             dualScreenManager.dismissOuterScreen()

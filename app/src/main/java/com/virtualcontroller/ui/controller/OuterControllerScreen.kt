@@ -25,6 +25,8 @@ import com.virtualcontroller.ui.components.VirtualButton
 import com.virtualcontroller.ui.components.VirtualTriggerSlider
 import kotlin.math.roundToInt
 
+import androidx.compose.ui.platform.LocalDensity
+
 @Composable
 fun OuterControllerScreen(
     currentProfile: ControllerProfile,
@@ -32,6 +34,7 @@ fun OuterControllerScreen(
     onReportStateChanged: (updater: (GamepadReport) -> GamepadReport) -> Unit
 ) {
     var canvasSize by remember { mutableStateOf(IntSize(1000, 1000)) }
+    val density = LocalDensity.current
 
     Box(
         modifier = Modifier
@@ -42,17 +45,23 @@ fun OuterControllerScreen(
         val outerElements = currentProfile.elements.filter { it.targetScreen == TargetScreen.OUTER_SCREEN }
 
         outerElements.forEach { elem ->
-            val widthPx = canvasSize.width * elem.sizePercent
-            val heightPx = widthPx
+            val elemWidthPx = canvasSize.width * elem.sizePercent
+            val elemHeightPx = elemWidthPx
 
-            val posX = (canvasSize.width * elem.xPercent - widthPx / 2f).coerceIn(0f, canvasSize.width - widthPx)
-            val posY = (canvasSize.height * elem.yPercent - heightPx / 2f).coerceIn(0f, canvasSize.height - heightPx)
+            val elemWidthDp = with(density) { elemWidthPx.toDp() }
+            val elemHeightDp = elemWidthDp
+
+            val posX = (canvasSize.width * elem.xPercent - elemWidthPx / 2f)
+                .coerceIn(0f, (canvasSize.width - elemWidthPx).coerceAtLeast(0f))
+            val posY = (canvasSize.height * elem.yPercent - elemHeightPx / 2f)
+                .coerceIn(0f, (canvasSize.height - elemHeightPx).coerceAtLeast(0f))
 
             Box(
                 modifier = Modifier
                     .offset { IntOffset(posX.roundToInt(), posY.roundToInt()) }
-                    .size(widthPx.dp, heightPx.dp)
+                    .size(elemWidthDp, elemHeightDp)
             ) {
+
                 when (elem.type) {
                     ControllerElementType.BUMPER_L1,
                     ControllerElementType.BUMPER_R1 -> {
