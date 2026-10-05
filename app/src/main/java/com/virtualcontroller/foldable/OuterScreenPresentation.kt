@@ -17,8 +17,9 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
  * alongside the primary inner screen.
  */
 class OuterScreenPresentation(
-    outerContext: Context,
+    private val outerContext: Context,
     display: Display,
+
     private val content: @Composable () -> Unit
 ) : Presentation(outerContext, display) {
 
