@@ -22,18 +22,15 @@ jobs:
         distribution: 'temurin'
         cache: 'gradle'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
     - name: Make gradlew executable
       run: |
         sed -i 's/\r$//' gradlew
         chmod +x gradlew
 
-    - name: Build Debug APK with Gradle Action
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        arguments: assembleDebug --no-daemon --stacktrace
+    - name: Build Debug APK
+      env:
+        ANDROID_HOME: /usr/local/lib/android/sdk
+      run: ./gradlew assembleDebug --no-daemon --stacktrace
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
