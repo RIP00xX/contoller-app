@@ -1,12 +1,12 @@
 package com.virtualcontroller.bt
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class HidReportDescriptorTest {
     @Test
-    fun windowsRawAxisSlotsKeepSticksBeforeTriggers() {
+    fun windowsRawAxisSlotsContainOnlyTheFourStickAxes() {
         val descriptor = HidReportDescriptor.GAMEPAD_DESCRIPTOR
         var offset = 0
         var page = 0
@@ -28,14 +28,14 @@ class HidReportDescriptorTest {
         }
         // Chromium's Windows raw input path indexes axes by usage - 0x30.
         val bytes = GamepadReport(rightStickX = 200, rightStickY = 220).toByteArray()
-        val windowsAxes = IntArray(6)
+        val windowsAxes = IntArray(4)
         axisUsages.forEachIndexed { wireIndex, usage -> windowsAxes[usage - 0x30] = bytes[wireIndex].toInt() and 255 }
-        assertEquals(listOf(128, 128, 200, 220, 0, 0), windowsAxes.toList())
-        assertEquals(listOf(0x30, 0x31, 0x32, 0x33, 0x34, 0x35), axisUsages)
+        assertEquals(listOf(128, 128, 200, 220), windowsAxes.toList())
+        assertEquals(listOf(0x30, 0x31, 0x32, 0x33), axisUsages)
     }
 
     @Test
-    fun reportSizesMatchWirePayloadsAndHatSupportsNeutral() {
+    fun reportSizesMatchWirePayloadsWithoutAnAdditionalHatAxis() {
         val descriptor = HidReportDescriptor.CONTROLLER_DESCRIPTOR
         var offset = 0
         var reportId = 0
@@ -43,7 +43,7 @@ class HidReportDescriptorTest {
         var count = 0
         var usagePage = 0
         var lastUsage = 0
-        var hatHasNullState = false
+        var hasHat = false
         var collections = 0
         val inputBits = mutableMapOf<Int, Int>()
         val featureBits = mutableMapOf<Int, Int>()
@@ -67,7 +67,7 @@ class HidReportDescriptorTest {
                 when (tag) {
                     8 -> {
                         inputBits[reportId] = (inputBits[reportId] ?: 0) + size * count
-                        if (usagePage == 1 && lastUsage == 0x39) hatHasNullState = value and 0x40 != 0
+                        if (usagePage == 1 && lastUsage == 0x39) hasHat = true
                     }
                     10 -> collections++
                     11 -> featureBits[reportId] = (featureBits[reportId] ?: 0) + size * count
@@ -79,6 +79,6 @@ class HidReportDescriptorTest {
         assertEquals(0, collections)
         assertEquals(mapOf(1 to GamepadReport().toByteArray().size * 8, 2 to TouchpadReport().toByteArray().size * 8), inputBits)
         assertEquals(mapOf(3 to 8), featureBits)
-        assertTrue(hatHasNullState)
+        assertFalse(hasHat)
     }
 }

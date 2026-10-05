@@ -6,14 +6,15 @@ Bluetooth HID controller with separate inner and outer layouts.
 
 The inner screen contains sticks and face buttons; the preset outer layouts
 contain L1/R1 and L2/R2. Unfolding alone does not imply dual-screen availability.
-All four outer controls are regular hold/release buttons. L2/R2 send trigger
-axis values of 255 while held and 0 when released; no pressure slider is shown.
-They also send digital trigger buttons in host slots 6/7 (zero-based). D-pad
-taps respond immediately and send both an eight-way hat and direction buttons
-in slots 12..15. Stick clicks use slots 10/11. The four stick axes occupy the
-first four Windows Chromium raw axis slots, with trigger axes after them.
-This matches common browser input ordering but does not change the controller
-into an XInput device or guarantee every game's automatic mapping.
+All four outer controls are regular hold/release buttons. L2/R2 send digital
+trigger buttons in host slots 6/7 (zero-based); no pressure slider or trigger
+axis is sent. D-pad taps respond immediately and send direction buttons in
+slots 12..15, with two buttons for diagonals and none for release. There is no
+extra hat axis, avoiding conflicting host/browser fallback interpretations.
+Stick clicks use slots 10/11; the only gamepad axes are the four stick axes in
+the first four Windows Chromium raw axis slots. This matches common browser
+input ordering but does not change the controller into an XInput device or
+guarantee every game's automatic mapping.
 Their size uses the actual cover view's shorter edge, capped at 96 dp, with
 safe drawing insets. Profile positions remain relative to that outer view in
 both portrait and landscape.

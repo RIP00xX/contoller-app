@@ -26,7 +26,7 @@ A high-performance Android application built with **Kotlin** and **Jetpack Compo
 
 ### 3. Native Bluetooth HID Emulation (`com.virtualcontroller.bt`)
 - **Zero-Driver Connectivity**: Utilizes Android's `BluetoothHidDevice` API to connect directly to PCs/consoles as a hardware Bluetooth controller without needing host software.
-- **Low-Latency Packet Serializer**: Converts touch inputs in real time into standard 10-byte HID reports containing 4 analog joystick axes, 2 analog trigger sliders, 8-directional D-Pad hat switch, and 19 digital buttons.
+- **Low-Latency Packet Serializer**: Converts touch inputs in real time into standard 7-byte HID reports containing four analog stick axes and 19 digital buttons, including L2/R2 and D-pad directions. Trigger and D-pad input have a single digital representation to avoid conflicting host mappings.
 - [GamepadReport.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/bt/GamepadReport.kt)
 - [BluetoothHidManager.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/bt/BluetoothHidManager.kt)
 - [BluetoothHidService.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/bt/BluetoothHidService.kt)

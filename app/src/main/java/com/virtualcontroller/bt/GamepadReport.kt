@@ -15,7 +15,7 @@ data class GamepadReport(
 ) {
 
     /**
-     * Serializes input state into a 10-byte HID report payload.
+     * Serializes input state into a 7-byte HID report payload.
      * Keep the app's logical button bits stable for saved layouts, and translate
      * them to the host's common button order only at the wire boundary.
      */
@@ -40,9 +40,6 @@ data class GamepadReport(
             leftStickY.clampToByte(),
             rightStickX.clampToByte(),
             rightStickY.clampToByte(),
-            l2Trigger.clampToByte(),
-            r2Trigger.clampToByte(),
-            (hatValue and 0x0F).toByte(),
             (hostButtons and 0xFF).toByte(),
             ((hostButtons shr 8) and 0xFF).toByte(),
             ((hostButtons shr 16) and 0xFF).toByte()

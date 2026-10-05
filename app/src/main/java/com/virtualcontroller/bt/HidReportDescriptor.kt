@@ -4,8 +4,8 @@ package com.virtualcontroller.bt
  * Standard USB/Bluetooth HID Gamepad Report Descriptor.
  * Defines standard input layout:
  * - 4 Analog Joystick Axes (LX, LY, RX, RY): 8-bit unsigned (0-255, center 128)
- * - 2 Analog Triggers (L2, R2): 8-bit unsigned (0-255, rested 0)
- * - 1 D-Pad Hat Switch: 4-bit (0=Up, 1=UpRight, 2=Right, 3=DownRight, 4=Down, 5=DownLeft, 6=Left, 7=UpLeft, 8=Released)
+ * - L2/R2 are digital buttons, as requested for the outer screen.
+ * - D-pad directions are digital buttons; diagonals press two directions.
  * - 19 Digital Buttons (plus padding across 3 bytes):
  *   Bit 0: Button A / Cross
  *   Bit 1: Button B / Circle
@@ -44,35 +44,6 @@ object HidReportDescriptor {
         0x75.toByte(), 0x08.toByte(), //   REPORT_SIZE (8)
         0x95.toByte(), 0x04.toByte(), //   REPORT_COUNT (4)
         0x81.toByte(), 0x02.toByte(), //   INPUT (Data,Var,Abs)
-
-        // --- 2 Analog Triggers (L2, R2) ---
-        0x05.toByte(), 0x01.toByte(), //   USAGE_PAGE (Generic Desktop)
-        // Windows Chromium indexes raw axes by usage minus X (0x30).
-        // Keep the four stick axes in slots 0..3; triggers occupy slots 4..5.
-        0x09.toByte(), 0x34.toByte(), //   USAGE (Ry - L2 Trigger)
-        0x09.toByte(), 0x35.toByte(), //   USAGE (Rz - R2 Trigger)
-        0x15.toByte(), 0x00.toByte(), //   LOGICAL_MINIMUM (0)
-        0x26.toByte(), 0xFF.toByte(), 0x00.toByte(), // LOGICAL_MAXIMUM (255)
-        0x75.toByte(), 0x08.toByte(), //   REPORT_SIZE (8)
-        0x95.toByte(), 0x02.toByte(), //   REPORT_COUNT (2)
-        0x81.toByte(), 0x02.toByte(), //   INPUT (Data,Var,Abs)
-
-        // --- D-Pad Hat Switch ---
-        0x05.toByte(), 0x01.toByte(), //   USAGE_PAGE (Generic Desktop)
-        0x09.toByte(), 0x39.toByte(), //   USAGE (Hat switch)
-        0x15.toByte(), 0x00.toByte(), //   LOGICAL_MINIMUM (0)
-        0x25.toByte(), 0x07.toByte(), //   LOGICAL_MAXIMUM (7)
-        0x35.toByte(), 0x00.toByte(), //   PHYSICAL_MINIMUM (0)
-        0x46.toByte(), 0x3B.toByte(), 0x01.toByte(), // PHYSICAL_MAXIMUM (315)
-        0x65.toByte(), 0x14.toByte(), //   UNIT (English Rotation: Angular Degrees)
-        0x75.toByte(), 0x04.toByte(), //   REPORT_SIZE (4)
-        0x95.toByte(), 0x01.toByte(), //   REPORT_COUNT (1)
-        0x81.toByte(), 0x42.toByte(), //   INPUT (Data,Var,Abs,Null State): 8 means released
-
-        // D-Pad Padding (4 bits)
-        0x75.toByte(), 0x04.toByte(), //   REPORT_SIZE (4)
-        0x95.toByte(), 0x01.toByte(), //   REPORT_COUNT (1)
-        0x81.toByte(), 0x03.toByte(), //   INPUT (Cnst,Var,Abs)
 
         // --- 19 Digital Buttons ---
         0x65.toByte(), 0x00.toByte(), //   UNIT (None)
