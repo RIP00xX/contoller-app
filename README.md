@@ -15,7 +15,7 @@ Stick clicks use slots 10/11; the only gamepad axes are the four stick axes in
 the first four Windows Chromium raw axis slots. This matches common browser
 input ordering but does not change the controller into an XInput device or
 guarantee every game's automatic mapping.
-Their size uses the actual cover view's shorter edge, capped at 96 dp, with
+Their size uses the actual cover view's shorter edge, capped at 144 dp, with
 safe drawing insets. Profile positions remain relative to that outer view in
 both portrait and landscape.
 The editor switches between inner and outer canvases; the outer preview uses

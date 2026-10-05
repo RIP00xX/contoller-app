@@ -51,7 +51,7 @@ fun OuterControllerScreen(
 
             outerElements.forEach { elem ->
                 val buttonSize = (shortEdge * elem.sizePercent)
-                    .coerceIn(64.dp, 96.dp).coerceAtMost(shortEdge)
+                    .coerceIn(64.dp, 144.dp).coerceAtMost(shortEdge)
                 val x = (maxWidth * elem.xPercent - buttonSize / 2)
                     .coerceIn(0.dp, (maxWidth - buttonSize).coerceAtLeast(0.dp))
                 val y = (maxHeight * elem.yPercent - buttonSize / 2)
@@ -61,7 +61,7 @@ fun OuterControllerScreen(
                     ControllerElementType.BUMPER_L1,
                     ControllerElementType.BUMPER_R1 -> elem.mappedHidBitOrAxis
                     ControllerElementType.TRIGGER_L2,
-                    ControllerElementType.TRIGGER_R2 -> 0 // Triggers use HID axes, not button bits.
+                    ControllerElementType.TRIGGER_R2 -> 0 // Trigger state is serialized into digital buttons.
                     else -> return@forEach
                 }
                 key(elem.id, elem.type, elem.mappedHidBitOrAxis) {

@@ -89,7 +89,7 @@ fun LayoutEditorScreen(
                 val isSelected = elem.id == selectedElementId
                 val elemWidthPx = if (editingScreen == TargetScreen.OUTER_SCREEN) {
                     val actualSize = (minOf(outerViewport.width, outerViewport.height) * elem.sizePercent)
-                        .coerceIn(64.dp, 96.dp).coerceAtMost(minOf(outerViewport.width, outerViewport.height))
+                        .coerceIn(64.dp, 144.dp).coerceAtMost(minOf(outerViewport.width, outerViewport.height))
                     canvasSize.width * (actualSize / outerViewport.width)
                 } else canvasSize.width * elem.sizePercent
                 val elemHeightPx = if (elem.type == ControllerElementType.TOUCHPAD) elemWidthPx * 0.65f else elemWidthPx
