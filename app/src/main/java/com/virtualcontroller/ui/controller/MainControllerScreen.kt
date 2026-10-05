@@ -35,11 +35,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.virtualcontroller.bt.GamepadReport
+import com.virtualcontroller.bt.HidConnectionState
+import com.virtualcontroller.foldable.DevicePosture
+import com.virtualcontroller.haptics.HapticFeedbackManager
+import com.virtualcontroller.model.ControllerElementType
+import com.virtualcontroller.model.ControllerProfile
+import com.virtualcontroller.model.TargetScreen
+import com.virtualcontroller.ui.components.VirtualButton
+import com.virtualcontroller.ui.components.VirtualDPad
+import com.virtualcontroller.ui.components.VirtualJoystick
+import com.virtualcontroller.ui.components.VirtualSteeringWheel
+import com.virtualcontroller.ui.components.VirtualTriggerSlider
+import kotlin.math.roundToInt
+
+
 
 @Composable
 fun MainControllerScreen(

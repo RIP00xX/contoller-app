@@ -40,13 +40,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.virtualcontroller.model.ControllerElement
+import com.virtualcontroller.model.ControllerProfile
+import com.virtualcontroller.model.TargetScreen
+import kotlin.math.roundToInt
+
+
 
 @Composable
 fun LayoutEditorScreen(
