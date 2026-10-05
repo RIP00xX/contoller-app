@@ -23,7 +23,8 @@ class OuterScreenPresentation(
 ) : Presentation(outerContext, display) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate()
+        super.onCreate(savedInstanceState)
+
 
         // Configure Window for Concurrent Multi-Display Touch Registration
         window?.apply {
