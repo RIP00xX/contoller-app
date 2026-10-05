@@ -12,10 +12,9 @@
     <!-- Haptic Vibrator Permission -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Foreground Service & Dual Screen Overlay Permissions -->
+    <!-- Foreground Service Permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Hardware Features -->
     <uses-feature android:name="android.hardware.bluetooth" android:required="true" />

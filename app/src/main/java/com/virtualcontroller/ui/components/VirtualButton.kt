@@ -62,9 +62,13 @@ fun VirtualButton(
                     onPress = {
                         isPressed = true
                         onPressedStateChanged(buttonBit, true)
-                        tryAwaitRelease()
-                        isPressed = false
-                        onPressedStateChanged(buttonBit, false)
+                        try {
+                            tryAwaitRelease()
+                        } finally {
+                            // A display/session disappearing must also release a held bumper.
+                            isPressed = false
+                            onPressedStateChanged(buttonBit, false)
+                        }
                     }
                 )
             },

@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import com.virtualcontroller.bt.GamepadReport
 import com.virtualcontroller.bt.HidConnectionState
 import com.virtualcontroller.foldable.DevicePosture
+import com.virtualcontroller.foldable.OuterScreenStatus
 import com.virtualcontroller.haptics.HapticFeedbackManager
 import com.virtualcontroller.model.ControllerElementType
 import com.virtualcontroller.model.ControllerProfile
@@ -63,21 +64,20 @@ fun MainControllerScreen(
     allProfiles: List<ControllerProfile>,
     connectionState: HidConnectionState,
     devicePosture: DevicePosture,
+    outerScreenStatus: OuterScreenStatus,
+    onEnableOuterScreen: () -> Unit,
     hapticManager: HapticFeedbackManager,
     onSelectProfile: (profile: ControllerProfile) -> Unit,
     onOpenEditor: () -> Unit,
-    onReportStateChanged: (report: GamepadReport) -> Unit
+    onReportStateChanged: (updater: (GamepadReport) -> GamepadReport) -> Unit
 ) {
-    var activeReport by remember { mutableStateOf(GamepadReport()) }
     var canvasSize by remember { mutableStateOf(IntSize(1000, 1000)) }
     var profileMenuExpanded by remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
 
     fun updateAndSendReport(updater: (GamepadReport) -> GamepadReport) {
-        val updated = updater(activeReport)
-        activeReport = updated
-        onReportStateChanged(updated)
+        onReportStateChanged(updater)
     }
 
     Box(
@@ -255,7 +255,7 @@ fun MainControllerScreen(
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = if (devicePosture == DevicePosture.FLAT) "DUAL SCREEN ACTIVE" else "FLEX MODE",
+                        text = if (devicePosture == DevicePosture.FLAT) "UNFOLDED" else "FLEX MODE",
                         color = Color.White,
                         fontSize = 11.sp
                     )
@@ -301,6 +301,20 @@ fun MainControllerScreen(
                     Icon(Icons.Default.Edit, contentDescription = "Edit Layout", tint = Color.Black)
                     Spacer(Modifier.width(4.dp))
                     Text(text = "Edit Mode", color = Color.Black, fontSize = 12.sp)
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier.align(Alignment.BottomCenter)
+                .background(Color(0xFF1E293B).copy(alpha = 0.9f), RoundedCornerShape(12.dp))
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(outerScreenStatus.message, color = Color.White, fontSize = 12.sp)
+            if (outerScreenStatus.canStart && currentProfile.elements.any { it.targetScreen == TargetScreen.OUTER_SCREEN }) {
+                Button(onClick = onEnableOuterScreen) {
+                    Text("Enable outer controls")
                 }
             }
         }
