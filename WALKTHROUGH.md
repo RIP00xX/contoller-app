@@ -11,7 +11,7 @@ A high-performance Android application built with **Kotlin** and **Jetpack Compo
 - **Device Evidence**: On a Fold 6 running Android 16 / One UI 8, the normal unfolded state exposes only the active inner display to the original app. A temporary ADB request for Samsung's `CONCURRENT_INNER_DEFAULT` state powered on both panels; normal behavior was restored immediately. This verifies hardware activation, not the patched APK's session or touch behavior.
 - **Concurrent Input**: Inner and outer callbacks update one shared HID report, preserving joystick, face-button, bumper, and trigger inputs together. Compose display content receives explicit lifecycle owners, and fold posture is collected while the activity is started.
 - **Outer Layout and Buttons**: Layout uses the cover view's measured constraints and safe drawing insets. Controls are sized from the shorter screen edge and capped at 96 dp. L1/R1/L2/R2 are regular hold/release buttons; outer L2/R2 send 255 when pressed and 0 on release without a pressure slider.
-- **Central Touchpad**: PlayStation and Xbox presets include an inner-screen touch surface and a separate Click strip mapped to gamepad button 13. Movement uses a separate single-contact absolute HID touchpad report. It does not emulate Sony's controller protocol, and ordinary games may ignore its coordinates. Host support must be tested separately; the gamepad remains Bluetooth-only. Re-pair if the host caches the old HID descriptor.
+- **Central Touchpad**: PlayStation and Xbox presets include an inner-screen touch surface and a separate Click strip mapped to gamepad button 18. Movement uses a separate single-contact absolute HID touchpad report. It does not emulate Sony's controller protocol, and ordinary games may ignore its coordinates. Host support must be tested separately; the gamepad remains Bluetooth-only. Re-pair if the host caches the old HID descriptor.
 - **Validation Status**: The patched APK still requires a successful build and device testing. See [README.md](README.md) for diagnostic findings and the test procedure.
 - [DualScreenManager.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/foldable/DualScreenManager.kt)
 - [OuterScreenPresentation.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/foldable/OuterScreenPresentation.kt)
@@ -26,7 +26,7 @@ A high-performance Android application built with **Kotlin** and **Jetpack Compo
 
 ### 3. Native Bluetooth HID Emulation (`com.virtualcontroller.bt`)
 - **Zero-Driver Connectivity**: Utilizes Android's `BluetoothHidDevice` API to connect directly to PCs/consoles as a hardware Bluetooth controller without needing host software.
-- **Low-Latency Packet Serializer**: Converts touch inputs in real time into standard 9-byte HID reports containing 4 analog joystick axes, 2 analog trigger sliders, 8-directional D-Pad hat switch, and 16 digital buttons.
+- **Low-Latency Packet Serializer**: Converts touch inputs in real time into standard 10-byte HID reports containing 4 analog joystick axes, 2 analog trigger sliders, 8-directional D-Pad hat switch, and 19 digital buttons.
 - [GamepadReport.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/bt/GamepadReport.kt)
 - [BluetoothHidManager.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/bt/BluetoothHidManager.kt)
 - [BluetoothHidService.kt](file:///d:/conntroller%20app/app/src/main/java/com/virtualcontroller/bt/BluetoothHidService.kt)

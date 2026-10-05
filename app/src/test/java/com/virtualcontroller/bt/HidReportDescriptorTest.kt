@@ -6,6 +6,35 @@ import org.junit.Test
 
 class HidReportDescriptorTest {
     @Test
+    fun windowsRawAxisSlotsKeepSticksBeforeTriggers() {
+        val descriptor = HidReportDescriptor.GAMEPAD_DESCRIPTOR
+        var offset = 0
+        var page = 0
+        val usages = mutableListOf<Int>()
+        val axisUsages = mutableListOf<Int>()
+        while (offset < descriptor.size) {
+            val prefix = descriptor[offset++].toInt() and 255
+            val length = if (prefix and 3 == 3) 4 else prefix and 3
+            var value = 0
+            repeat(length) { index -> value = value or ((descriptor[offset++].toInt() and 255) shl (8 * index)) }
+            val type = (prefix shr 2) and 3
+            val tag = prefix shr 4
+            if (type == 1 && tag == 0) page = value
+            if (type == 2 && tag == 0) usages.add(value)
+            if (type == 0) {
+                if (tag == 8 && page == 1) axisUsages.addAll(usages.filter { it in 0x30..0x35 })
+                usages.clear()
+            }
+        }
+        // Chromium's Windows raw input path indexes axes by usage - 0x30.
+        val bytes = GamepadReport(rightStickX = 200, rightStickY = 220).toByteArray()
+        val windowsAxes = IntArray(6)
+        axisUsages.forEachIndexed { wireIndex, usage -> windowsAxes[usage - 0x30] = bytes[wireIndex].toInt() and 255 }
+        assertEquals(listOf(128, 128, 200, 220, 0, 0), windowsAxes.toList())
+        assertEquals(listOf(0x30, 0x31, 0x32, 0x33, 0x34, 0x35), axisUsages)
+    }
+
+    @Test
     fun reportSizesMatchWirePayloadsAndHatSupportsNeutral() {
         val descriptor = HidReportDescriptor.CONTROLLER_DESCRIPTOR
         var offset = 0

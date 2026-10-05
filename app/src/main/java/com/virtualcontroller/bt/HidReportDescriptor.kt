@@ -6,19 +6,20 @@ package com.virtualcontroller.bt
  * - 4 Analog Joystick Axes (LX, LY, RX, RY): 8-bit unsigned (0-255, center 128)
  * - 2 Analog Triggers (L2, R2): 8-bit unsigned (0-255, rested 0)
  * - 1 D-Pad Hat Switch: 4-bit (0=Up, 1=UpRight, 2=Right, 3=DownRight, 4=Down, 5=DownLeft, 6=Left, 7=UpLeft, 8=Released)
- * - 16 Digital Buttons (Bitmask across 2 bytes):
+ * - 19 Digital Buttons (plus padding across 3 bytes):
  *   Bit 0: Button A / Cross
  *   Bit 1: Button B / Circle
  *   Bit 2: Button X / Square
  *   Bit 3: Button Y / Triangle
  *   Bit 4: L1 Bumper
  *   Bit 5: R1 Bumper
- *   Bit 6: L3 (Left Stick Press)
- *   Bit 7: R3 (Right Stick Press)
+ *   Bit 6: L2
+ *   Bit 7: R2
  *   Bit 8: Select / Back
  *   Bit 9: Start / Options
- *   Bit 10: System / Mode / PS / Xbox Button
- *   Bit 11-15: Extra custom actions
+ *   Bit 10-11: L3/R3
+ *   Bit 12-15: D-pad Up/Down/Left/Right
+ *   Bit 16-18: System, Touchpad Click, Share
  */
 object HidReportDescriptor {
 
@@ -37,7 +38,7 @@ object HidReportDescriptor {
         0x09.toByte(), 0x30.toByte(), //   USAGE (X)
         0x09.toByte(), 0x31.toByte(), //   USAGE (Y)
         0x09.toByte(), 0x32.toByte(), //   USAGE (Z - Right X)
-        0x09.toByte(), 0x35.toByte(), //   USAGE (Rz - Right Y)
+        0x09.toByte(), 0x33.toByte(), //   USAGE (Rx - Right Y)
         0x15.toByte(), 0x00.toByte(), //   LOGICAL_MINIMUM (0)
         0x26.toByte(), 0xFF.toByte(), 0x00.toByte(), // LOGICAL_MAXIMUM (255)
         0x75.toByte(), 0x08.toByte(), //   REPORT_SIZE (8)
@@ -46,8 +47,10 @@ object HidReportDescriptor {
 
         // --- 2 Analog Triggers (L2, R2) ---
         0x05.toByte(), 0x01.toByte(), //   USAGE_PAGE (Generic Desktop)
-        0x09.toByte(), 0x33.toByte(), //   USAGE (Rx - L2 Trigger)
-        0x09.toByte(), 0x34.toByte(), //   USAGE (Ry - R2 Trigger)
+        // Windows Chromium indexes raw axes by usage minus X (0x30).
+        // Keep the four stick axes in slots 0..3; triggers occupy slots 4..5.
+        0x09.toByte(), 0x34.toByte(), //   USAGE (Ry - L2 Trigger)
+        0x09.toByte(), 0x35.toByte(), //   USAGE (Rz - R2 Trigger)
         0x15.toByte(), 0x00.toByte(), //   LOGICAL_MINIMUM (0)
         0x26.toByte(), 0xFF.toByte(), 0x00.toByte(), // LOGICAL_MAXIMUM (255)
         0x75.toByte(), 0x08.toByte(), //   REPORT_SIZE (8)
@@ -71,18 +74,22 @@ object HidReportDescriptor {
         0x95.toByte(), 0x01.toByte(), //   REPORT_COUNT (1)
         0x81.toByte(), 0x03.toByte(), //   INPUT (Cnst,Var,Abs)
 
-        // --- 16 Digital Buttons ---
+        // --- 19 Digital Buttons ---
         0x65.toByte(), 0x00.toByte(), //   UNIT (None)
         0x35.toByte(), 0x00.toByte(), //   PHYSICAL_MINIMUM (0)
         0x45.toByte(), 0x00.toByte(), //   PHYSICAL_MAXIMUM (0)
         0x05.toByte(), 0x09.toByte(), //   USAGE_PAGE (Button)
         0x19.toByte(), 0x01.toByte(), //   USAGE_MINIMUM (Button 1)
-        0x29.toByte(), 0x10.toByte(), //   USAGE_MAXIMUM (Button 16)
+        0x29.toByte(), 0x13.toByte(), //   USAGE_MAXIMUM (Button 19)
         0x15.toByte(), 0x00.toByte(), //   LOGICAL_MINIMUM (0)
         0x25.toByte(), 0x01.toByte(), //   LOGICAL_MAXIMUM (1)
         0x75.toByte(), 0x01.toByte(), //   REPORT_SIZE (1)
-        0x95.toByte(), 0x10.toByte(), //   REPORT_COUNT (16)
+        0x95.toByte(), 0x13.toByte(), //   REPORT_COUNT (19)
         0x81.toByte(), 0x02.toByte(), //   INPUT (Data,Var,Abs)
+
+        0x75.toByte(), 0x05.toByte(), //   REPORT_SIZE (5)
+        0x95.toByte(), 0x01.toByte(), //   REPORT_COUNT (1)
+        0x81.toByte(), 0x03.toByte(), //   INPUT (Constant padding)
 
         0xC0.toByte()                 // END_COLLECTION
     )

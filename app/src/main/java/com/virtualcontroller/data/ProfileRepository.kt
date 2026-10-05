@@ -48,7 +48,7 @@ class ProfileRepository(private val context: Context) {
             } else {
                 val type = object : TypeToken<List<ControllerProfile>>() {}.type
                 val customList: List<ControllerProfile> = gson.fromJson(json, type) ?: emptyList()
-                defaultProfiles + customList
+                mergeProfileOverrides(defaultProfiles, customList)
             }
         }
     }

@@ -15,10 +15,26 @@ data class GamepadReport(
 ) {
 
     /**
-     * Serializes input state into exact 9-byte HID report payload.
+     * Serializes input state into a 10-byte HID report payload.
+     * Keep the app's logical button bits stable for saved layouts, and translate
+     * them to the host's common button order only at the wire boundary.
      */
     fun toByteArray(): ByteArray {
         val hatValue = if (dPadHat in 0..7) dPadHat else 8 // 8 represents neutral/released in HID Hat Switch
+        var hostButtons = buttonsMask and 0x3F // Face buttons and bumpers
+        if (l2Trigger > 0) hostButtons = hostButtons or (1 shl 6)
+        if (r2Trigger > 0) hostButtons = hostButtons or (1 shl 7)
+        if (buttonsMask and BUTTON_SELECT != 0) hostButtons = hostButtons or (1 shl 8)
+        if (buttonsMask and BUTTON_START != 0) hostButtons = hostButtons or (1 shl 9)
+        if (buttonsMask and BUTTON_L3 != 0) hostButtons = hostButtons or (1 shl 10)
+        if (buttonsMask and BUTTON_R3 != 0) hostButtons = hostButtons or (1 shl 11)
+        if (hatValue == 0 || hatValue == 1 || hatValue == 7) hostButtons = hostButtons or (1 shl 12)
+        if (hatValue in 3..5) hostButtons = hostButtons or (1 shl 13)
+        if (hatValue in 5..7) hostButtons = hostButtons or (1 shl 14)
+        if (hatValue in 1..3) hostButtons = hostButtons or (1 shl 15)
+        if (buttonsMask and BUTTON_MODE != 0) hostButtons = hostButtons or (1 shl 16)
+        if (buttonsMask and BUTTON_TOUCHPAD != 0) hostButtons = hostButtons or (1 shl 17)
+        if (buttonsMask and BUTTON_SHARE != 0) hostButtons = hostButtons or (1 shl 18)
         return byteArrayOf(
             leftStickX.clampToByte(),
             leftStickY.clampToByte(),
@@ -27,8 +43,9 @@ data class GamepadReport(
             l2Trigger.clampToByte(),
             r2Trigger.clampToByte(),
             (hatValue and 0x0F).toByte(),
-            (buttonsMask and 0xFF).toByte(),
-            ((buttonsMask shr 8) and 0xFF).toByte()
+            (hostButtons and 0xFF).toByte(),
+            ((hostButtons shr 8) and 0xFF).toByte(),
+            ((hostButtons shr 16) and 0xFF).toByte()
         )
     }
 

@@ -8,6 +8,12 @@ The inner screen contains sticks and face buttons; the preset outer layouts
 contain L1/R1 and L2/R2. Unfolding alone does not imply dual-screen availability.
 All four outer controls are regular hold/release buttons. L2/R2 send trigger
 axis values of 255 while held and 0 when released; no pressure slider is shown.
+They also send digital trigger buttons in host slots 6/7 (zero-based). D-pad
+taps respond immediately and send both an eight-way hat and direction buttons
+in slots 12..15. Stick clicks use slots 10/11. The four stick axes occupy the
+first four Windows Chromium raw axis slots, with trigger axes after them.
+This matches common browser input ordering but does not change the controller
+into an XInput device or guarantee every game's automatic mapping.
 Their size uses the actual cover view's shorter edge, capped at 96 dp, with
 safe drawing insets. Profile positions remain relative to that outer view in
 both portrait and landscape.
@@ -17,14 +23,14 @@ are used until the first dual-screen session).
 
 The PlayStation and Xbox presets include a central touchpad on the inner screen.
 Drag its surface to send single-contact absolute HID touchpad coordinates; hold
-the separate **Click** strip to press gamepad button 13. Touch and click reports
+the separate **Click** strip to press gamepad button 18. Touch and click reports
 are independent of sticks and shoulder inputs. No companion app is required
 for the gamepad. This is a generic Bluetooth HID controller, not a DualShock or
 DualSense protocol emulator: ordinary games may ignore touchpad coordinates.
 Native touchpad handling depends on the paired host. No mouse report or automatic
 mapping to a joystick is sent.
 
-Because the Bluetooth descriptor now includes a touchpad report, a host that
+Because the Bluetooth descriptor and button order have changed, a host that
 caches the previous descriptor may need to forget the old pairing and pair again
 after installing this version.
 The app checks Jetpack WindowManager's rear-facing `OPERATION_PRESENT_ON_AREA`
@@ -56,10 +62,12 @@ https://developer.android.com/develop/adaptive-apps/guides/foldables/support-fol
    controls or duplicate presentation windows.
 5. Verify the outer controls fit in portrait and landscape, and outer L2/R2
    activate immediately on press without requiring a drag. Check the central
-   Click strip as button 13 in the host's game-controller test panel, including
+   Click strip as button 18 in the host's game-controller test panel, including
    while holding a stick and an outer trigger. Check touch movement separately
    on a host that natively supports HID touchpad input; gamepad recognition does
    not establish touchpad support.
+6. Move or resize an element in either editor canvas and save. Change profiles,
+   switch back, and restart the app; the edited preset must retain its changes.
 
 With USB debugging enabled, capture read-only device diagnostics:
 
