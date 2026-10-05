@@ -34,10 +34,18 @@ jobs:
         chmod +x gradlew
 
     - name: Build Debug APK
-      run: ./gradlew assembleDebug -x test --no-daemon --stacktrace
+      run: |
+        ./gradlew assembleDebug -x test --no-daemon --stacktrace || (
+          echo "## Build Failed" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          ./gradlew assembleDebug -x test --no-daemon --info | tail -n 150 >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        )
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: VirtualController-Debug-APK
         path: app/build/outputs/apk/debug/app-debug.apk
+
