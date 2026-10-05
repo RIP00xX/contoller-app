@@ -12,9 +12,10 @@
     <!-- Haptic Vibrator Permission -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Foreground Service Permission for Low Latency HID Connection -->
+    <!-- Foreground Service & Dual Screen Overlay Permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Hardware Features -->
     <uses-feature android:name="android.hardware.bluetooth" android:required="true" />
@@ -31,8 +32,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.VirtualController"
         tools:targetApi="34">
-        
+
+        <!-- Samsung Galaxy Fold Dual Display & Multi-Window Meta Data -->
+        <meta-data android:name="com.samsung.android.sdk.multiwindow.enable" android:value="true" />
+        <meta-data android:name="com.samsung.android.sdk.multiwindow.multiinstance.enable" android:value="true" />
+        <meta-data android:name="com.samsung.android.multidisplay.keep_process" android:value="true" />
+        <meta-data android:name="com.samsung.android.foldable.option" android:value="fixed" />
+
         <activity
+
             android:name=".MainActivity"
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden"

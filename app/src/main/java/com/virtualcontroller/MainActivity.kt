@@ -101,30 +101,27 @@ class MainActivity : ComponentActivity() {
 
                 val scope = rememberCoroutineScope()
 
-                // Collect WindowManager Fold Posture
-                LaunchedEffect(Unit) {
-                    foldStateTracker.postureFlow.collectLatest { posture ->
-                        currentPosture = posture
-                        if (posture == DevicePosture.FLAT) {
-                            // Device Unfolded -> Project Outer Screen Controls on Cover Display
-                            dualScreenManager.showOuterScreenContent {
-                                OuterControllerScreen(
-                                    currentProfile = activeProfile,
-                                    hapticManager = hapticManager,
-                                    onReportStateChanged = { updater ->
-                                        val updated = updater(GamepadReport())
-                                        hidService?.hidManager?.sendReport(updated)
-                                        updated
-                                    }
-                                )
-
-
-                            }
-                        } else {
-                            dualScreenManager.dismissOuterScreen()
+                // Collect WindowManager Fold Posture & Trigger Outer Screen
+                LaunchedEffect(activeProfile.id, currentPosture) {
+                    val hasOuterElements = activeProfile.elements.any { it.targetScreen == TargetScreen.OUTER_SCREEN }
+                    if (hasOuterElements || currentPosture == DevicePosture.FLAT) {
+                        // Device Unfolded / Dual Profile -> Project Outer Screen Controls on Cover Display
+                        dualScreenManager.showOuterScreenContent {
+                            OuterControllerScreen(
+                                currentProfile = activeProfile,
+                                hapticManager = hapticManager,
+                                onReportStateChanged = { updater ->
+                                    val updated = updater(GamepadReport())
+                                    hidService?.hidManager?.sendReport(updated)
+                                    updated
+                                }
+                            )
                         }
+                    } else {
+                        dualScreenManager.dismissOuterScreen()
                     }
                 }
+
 
                 // Poll Connection State from Service
                 DisposableEffect(isServiceBound) {
@@ -189,7 +186,20 @@ class MainActivity : ComponentActivity() {
         } else {
             bindHidService()
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(this)) {
+            try {
+                val overlayIntent = Intent(
+                    android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    android.net.Uri.parse("package:$packageName")
+                )
+                startActivity(overlayIntent)
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }
     }
+
 
     private fun bindHidService() {
         val intent = Intent(this, BluetoothHidService::class.java)
