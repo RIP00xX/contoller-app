@@ -36,6 +36,7 @@ import com.virtualcontroller.foldable.DualScreenManager
 import com.virtualcontroller.foldable.FoldStateTracker
 import com.virtualcontroller.haptics.HapticFeedbackManager
 import com.virtualcontroller.model.ControllerProfile
+import com.virtualcontroller.model.TargetScreen
 import com.virtualcontroller.ui.controller.MainControllerScreen
 import com.virtualcontroller.ui.controller.OuterControllerScreen
 import com.virtualcontroller.ui.editor.LayoutEditorScreen
