@@ -35,17 +35,27 @@ jobs:
 
     - name: Build Debug APK
       run: |
-        ./gradlew assembleDebug -x test --no-daemon --stacktrace || (
-          echo "## Build Failed" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          ./gradlew assembleDebug -x test --no-daemon --info | tail -n 150 >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          exit 1
-        )
+        ./gradlew assembleDebug -x test --no-daemon --stacktrace 2>&1 | tee build_output.txt
+
+    - name: Print Failure Summary
+      if: failure()
+      run: |
+        echo "## Build Failure Log" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        tail -n 100 build_output.txt >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload Build Log on Failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-failure-log
+        path: build_output.txt
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: VirtualController-Debug-APK
         path: app/build/outputs/apk/debug/app-debug.apk
+
 
